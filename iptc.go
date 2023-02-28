@@ -149,3 +149,19 @@ func makeIptcDatumIterator(data *IptcData, cIter *C.Exiv2IptcDatumIterator) *Ipt
 func (i *Image) IptcStripKey(key string) error {
 	return i.StripKey(IPTC, key)
 }
+
+func (i *Image) IptcStripMetadata(unless []string) error {
+	iptcData := i.GetIptcData()
+	for iter := iptcData.Iterator(); iter.HasNext(); {
+		key := iter.Next().Key()
+		// Skip unless
+		if contains(key, unless) {
+			continue
+		}
+		err := i.StripKey(IPTC, key)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}

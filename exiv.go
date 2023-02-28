@@ -258,3 +258,30 @@ func (i *Image) StripKey(f MetadataFormat, key string) error {
 
 	return nil
 }
+
+func (i *Image) StripMetadata(unless []string) error {
+	var err error
+	err = i.ExifStripMetadata(unless)
+	if err != nil {
+		return err
+	}
+	err = i.IptcStripMetadata(unless)
+	if err != nil {
+		return err
+	}
+	err = i.XmpStripMetadata(unless)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// contains checks if a string is present in a string slice
+func contains(needle string, haystack []string) bool {
+	for _, s := range haystack {
+		if s == needle {
+			return true
+		}
+	}
+	return false
+}

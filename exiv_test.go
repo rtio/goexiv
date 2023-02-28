@@ -522,6 +522,138 @@ func TestXmpStripKey(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestExifStrip(t *testing.T) {
+	img, err := goexiv.Open("testdata/pixel.jpg")
+	require.NoError(t, err)
+
+	// add two strings to the EXIF data
+	err = img.SetExifString("Exif.Photo.UserComment", "123")
+	require.NoError(t, err)
+
+	err = img.SetExifString("Exif.Photo.DateTimeOriginal", "123")
+	require.NoError(t, err)
+
+	err = img.ExifStripMetadata([]string{"Exif.Photo.UserComment"})
+	require.NoError(t, err)
+
+	err = img.ReadMetadata()
+	require.NoError(t, err)
+
+	data := img.GetExifData()
+
+	_, err = data.GetString("Exif.Photo.UserComment")
+	require.NoError(t, err)
+
+	_, err = data.GetString("Exif.Photo.DateTimeOriginal")
+	require.Error(t, err)
+}
+
+func TestIptcStrip(t *testing.T) {
+	img, err := goexiv.Open("testdata/pixel.jpg")
+	require.NoError(t, err)
+
+	// add two strings to the IPTC data
+	err = img.SetIptcString("Iptc.Application2.Caption", "123")
+	require.NoError(t, err)
+
+	err = img.SetIptcString("Iptc.Application2.Keywords", "123")
+	require.NoError(t, err)
+
+	err = img.IptcStripMetadata([]string{"Iptc.Application2.Caption"})
+	require.NoError(t, err)
+
+	err = img.ReadMetadata()
+	require.NoError(t, err)
+
+	data := img.GetIptcData()
+
+	_, err = data.GetString("Iptc.Application2.Caption")
+	require.NoError(t, err)
+
+	_, err = data.GetString("Iptc.Application2.Keywords")
+	require.Error(t, err)
+}
+
+func TestXmpStrip(t *testing.T) {
+	img, err := goexiv.Open("testdata/pixel.jpg")
+	require.NoError(t, err)
+
+	// add two strings to the XMP data
+	err = img.SetXmpString("Xmp.dc.description", "123")
+	require.NoError(t, err)
+
+	err = img.SetXmpString("Xmp.dc.subject", "123")
+	require.NoError(t, err)
+
+	err = img.XmpStripMetadata([]string{"Xmp.dc.description"})
+	require.NoError(t, err)
+
+	err = img.ReadMetadata()
+	require.NoError(t, err)
+
+	data := img.GetXmpData()
+
+	_, err = data.GetString("Xmp.dc.description")
+	require.NoError(t, err)
+
+	_, err = data.GetString("Xmp.dc.subject")
+	require.Error(t, err)
+}
+
+func TestStripMetadata(t *testing.T) {
+	img, err := goexiv.Open("testdata/pixel.jpg")
+	require.NoError(t, err)
+
+	// add two strings to the EXIF data
+	err = img.SetExifString("Exif.Photo.UserComment", "123")
+	require.NoError(t, err)
+
+	err = img.SetExifString("Exif.Photo.DateTimeOriginal", "123")
+	require.NoError(t, err)
+
+	// add two strings to the IPTC data
+	err = img.SetIptcString("Iptc.Application2.Caption", "123")
+	require.NoError(t, err)
+
+	err = img.SetIptcString("Iptc.Application2.Keywords", "123")
+	require.NoError(t, err)
+
+	// add two strings to the XMP data
+	err = img.SetXmpString("Xmp.dc.description", "123")
+	require.NoError(t, err)
+
+	err = img.SetXmpString("Xmp.dc.subject", "123")
+	require.NoError(t, err)
+
+	err = img.StripMetadata([]string{"Exif.Photo.UserComment", "Iptc.Application2.Caption", "Xmp.dc.description"})
+	require.NoError(t, err)
+
+	err = img.ReadMetadata()
+	require.NoError(t, err)
+
+	exifData := img.GetExifData()
+	iptcData := img.GetIptcData()
+	xmpData := img.GetXmpData()
+
+	_, err = exifData.GetString("Exif.Photo.UserComment")
+	require.NoError(t, err)
+
+	_, err = exifData.GetString("Exif.Photo.DateTimeOriginal")
+	require.Error(t, err)
+
+	_, err = iptcData.GetString("Iptc.Application2.Caption")
+	require.NoError(t, err)
+
+	_, err = iptcData.GetString("Iptc.Application2.Keywords")
+	require.Error(t, err)
+
+	_, err = xmpData.GetString("Xmp.dc.description")
+	require.NoError(t, err)
+
+	_, err = xmpData.GetString("Xmp.dc.subject")
+	require.Error(t, err)
+}
+
 func BenchmarkImage_GetBytes_KeepAlive(b *testing.B) {
 	bytes, err := ioutil.ReadFile("testdata/stripped_pixel.jpg")
 	require.NoError(b, err)

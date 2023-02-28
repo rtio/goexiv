@@ -145,3 +145,19 @@ func makeExifDatumIterator(data *ExifData, cIter *C.Exiv2ExifDatumIterator) *Exi
 func (i *Image) ExifStripKey(key string) error {
 	return i.StripKey(EXIF, key)
 }
+
+func (i *Image) ExifStripMetadata(unless []string) error {
+	exifData := i.GetExifData()
+	for iter := exifData.Iterator(); iter.HasNext(); {
+		key := iter.Next().Key()
+		// Skip unless
+		if contains(key, unless) {
+			continue
+		}
+		err := i.StripKey(EXIF, key)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
