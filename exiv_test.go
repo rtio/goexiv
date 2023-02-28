@@ -1,7 +1,7 @@
 package goexiv_test
 
 import (
-	"github.com/kolesa-team/goexiv"
+	"github.com/rtio/goexiv"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"

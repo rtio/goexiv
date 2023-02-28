@@ -1,4 +1,4 @@
-[![Build Status](https://api.travis-ci.org/kolesa-team/goexiv.svg)](https://api.travis-ci.org/kolesa-team/goexiv.svg)
+[![Build Status](https://api.travis-ci.org/rtio/goexiv.svg)](https://api.travis-ci.org/rtio/goexiv.svg)
 
 # Go bindings for exiv2 (http://www.exiv2.org)
 
@@ -37,7 +37,7 @@ Also, this library is tested with `golang:1.13-alpine` docker image, where the c
 Basic usage:
 
 ```
-import "github.com/kolesa-team/goexiv"
+import "github.com/rtio/goexiv"
 
 // Open an image from disk
 goexivImg, err := goexiv.Open("/path/to/image.jpg")
