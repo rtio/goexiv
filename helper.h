@@ -29,6 +29,7 @@ void exiv2_image_read_metadata(Exiv2Image *img, Exiv2Error **error);
 void exiv2_image_set_exif_string(Exiv2Image *img, char *key, char *value, Exiv2Error **error);
 void exiv2_image_set_exif_short(Exiv2Image *img, char *key, char *value, Exiv2Error **error);
 void exiv2_image_set_iptc_string(Exiv2Image *img, char *key, char *value, Exiv2Error **error);
+void exiv2_image_set_xmp_string(Exiv2Image *img, char *key, char *value, Exiv2Error **error);
 void exiv2_image_set_iptc_short(Exiv2Image *img, char *key, char *value, Exiv2Error **error);
 void exiv2_image_free(Exiv2Image *img);
 

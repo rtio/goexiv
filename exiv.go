@@ -171,12 +171,8 @@ func (i *Image) ICCProfile() []byte {
 	return C.GoBytes(unsafe.Pointer(C.exiv2_image_icc_profile(i.img)), size)
 }
 
-// Sets an exif or iptc key with a given string value
-func (i *Image) SetMetadataString(format, key, value string) error {
-	if format != "iptc" && format != "exif" {
-		return errors.New("invalid metadata type: " + format)
-	}
-
+// SetMetadataString Sets an exif or iptc key with a given string value
+func (i *Image) SetMetadataString(f MetadataFormat, key, value string) error {
 	cKey := C.CString(key)
 	cValue := C.CString(value)
 
@@ -187,10 +183,15 @@ func (i *Image) SetMetadataString(format, key, value string) error {
 
 	var cerr *C.Exiv2Error
 
-	if format == "iptc" {
-		C.exiv2_image_set_iptc_string(i.img, cKey, cValue, &cerr)
-	} else {
+	switch f {
+	case EXIF:
 		C.exiv2_image_set_exif_string(i.img, cKey, cValue, &cerr)
+	case IPTC:
+		C.exiv2_image_set_iptc_string(i.img, cKey, cValue, &cerr)
+	case XMP:
+		C.exiv2_image_set_xmp_string(i.img, cKey, cValue, &cerr)
+	default:
+		return errors.New("invalid metadata type")
 	}
 
 	if cerr != nil {
@@ -202,12 +203,8 @@ func (i *Image) SetMetadataString(format, key, value string) error {
 	return nil
 }
 
-// Sets an exif or iptc key with a given short value
-func (i *Image) SetMetadataShort(format, key, value string) error {
-	if format != "iptc" && format != "exif" {
-		return errors.New("invalid metadata type: " + format)
-	}
-
+// SetMetadataShort Sets an exif or iptc key with a given short value
+func (i *Image) SetMetadataShort(f MetadataFormat, key, value string) error {
 	cKey := C.CString(key)
 	cValue := C.CString(value)
 
@@ -218,10 +215,13 @@ func (i *Image) SetMetadataShort(format, key, value string) error {
 
 	var cerr *C.Exiv2Error
 
-	if format == "iptc" {
-		C.exiv2_image_set_iptc_short(i.img, cKey, cValue, &cerr)
-	} else {
+	switch f {
+	case EXIF:
 		C.exiv2_image_set_exif_short(i.img, cKey, cValue, &cerr)
+	case IPTC:
+		C.exiv2_image_set_iptc_short(i.img, cKey, cValue, &cerr)
+	default:
+		return errors.New("invalid metadata type")
 	}
 
 	if cerr != nil {
