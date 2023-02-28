@@ -22,6 +22,12 @@ type XmpDatum struct {
 	datum *C.Exiv2XmpDatum
 }
 
+// XmpDatumIterator wraps the respective C++ structure.
+type XmpDatumIterator struct {
+	data *XmpData
+	iter *C.Exiv2XmpDatumIterator
+}
+
 func makeXmpData(img *Image, cdata *C.Exiv2XmpData) *XmpData {
 	data := &XmpData{
 		img,
@@ -104,4 +110,50 @@ func (d *XmpData) GetString(key string) (string, error) {
 	}
 
 	return datum.String(), nil
+}
+
+func (i *Image) XmpStripMetadata(unless []string) error {
+	xmpData := i.GetXmpData()
+	for iter := xmpData.Iterator(); iter.HasNext(); {
+		key := iter.Next().Key()
+		// Skip unless
+		if contains(key, unless) {
+			continue
+		}
+		err := i.StripKey(XMP, key)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Iterator returns a new XmpDatumIterator to iterate over all IPTC data.
+func (d *XmpData) Iterator() *XmpDatumIterator {
+	return makeXmpDatumIterator(d, C.exiv2_xmp_data_iterator(d.data))
+}
+
+// HasNext returns true as long as the iterator has another datum to deliver.
+func (i *XmpDatumIterator) HasNext() bool {
+	return C.exiv2_xmp_data_iterator_has_next(i.iter) != 0
+}
+
+// Next returns the next XmpDatum of the iterator or nil if iterator has reached the end.
+func (i *XmpDatumIterator) Next() *XmpDatum {
+	return makeXmpDatum(i.data, C.exiv2_xmp_datum_iterator_next(i.iter))
+}
+
+func makeXmpDatumIterator(data *XmpData, cIter *C.Exiv2XmpDatumIterator) *XmpDatumIterator {
+	datum := &XmpDatumIterator{data, cIter}
+
+	runtime.SetFinalizer(datum, func(i *XmpDatumIterator) {
+		C.exiv2_xmp_datum_iterator_free(i.iter)
+	})
+
+	return datum
+}
+
+// Key returns the XMP key of the datum.
+func (d *XmpDatum) Key() string {
+	return C.GoString(C.exiv2_xmp_datum_key(d.datum))
 }
