@@ -1,6 +1,6 @@
 language: go
 go: 1.18
-go_import_path: https://github.com/kolesa-team/goexiv
+go_import_path: https://github.com/rtio/goexiv
 
 cache:
   apt: true
