@@ -172,6 +172,25 @@ exiv2_image_set_iptc_string(Exiv2Image *img, char *key, char *value, Exiv2Error 
 }
 
 void
+exiv2_image_set_xmp_string(Exiv2Image *img, char *key, char *value, Exiv2Error **error)
+{
+	Exiv2::XmpData xmpData = img->image->xmpData();
+
+	try {
+		Exiv2::StringValue valueObject;
+		valueObject.read(value);
+		xmpData[key] = valueObject;
+
+		img->image->setXmpData(xmpData);
+		img->image->writeMetadata();
+	} catch (Exiv2::Error &e) {
+		if (error) {
+			*error = new Exiv2Error(e);
+		}
+	}
+}
+
+void
 exiv2_image_set_iptc_short(Exiv2Image *img, char *key, char *value, Exiv2Error **error)
 {
     Exiv2::IptcData iptcData = img->image->iptcData();

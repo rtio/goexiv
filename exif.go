@@ -61,7 +61,7 @@ func (i *Image) GetExifData() *ExifData {
 }
 
 func (i *Image) SetExifString(key, value string) error {
-	return i.SetMetadataString("exif", key, value)
+	return i.SetMetadataString(EXIF, key, value)
 }
 
 func (d *ExifData) GetString(key string) (string, error) {

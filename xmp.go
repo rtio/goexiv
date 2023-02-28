@@ -88,3 +88,20 @@ func (d *XmpDatum) String() string {
 func (i *Image) XmpStripKey(key string) error {
 	return i.StripKey(XMP, key)
 }
+
+func (i *Image) SetXmpString(key, value string) error {
+	return i.SetMetadataString(XMP, key, value)
+}
+
+func (d *XmpData) GetString(key string) (string, error) {
+	datum, err := d.FindKey(key)
+	if err != nil {
+		return "", err
+	}
+
+	if datum == nil {
+		return "", ErrMetadataKeyNotFound
+	}
+
+	return datum.String(), nil
+}

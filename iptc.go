@@ -61,11 +61,11 @@ func (i *Image) GetIptcData() *IptcData {
 }
 
 func (i *Image) SetIptcString(key, value string) error {
-	return i.SetMetadataString("iptc", key, value)
+	return i.SetMetadataString(IPTC, key, value)
 }
 
 func (i *Image) SetIptcShort(key, value string) error {
-	return i.SetMetadataShort("iptc", key, value)
+	return i.SetMetadataShort(IPTC, key, value)
 }
 
 func (d *IptcData) GetString(key string) (string, error) {

@@ -184,7 +184,7 @@ func TestNoMetadata(t *testing.T) {
 }
 
 type MetadataTestCase struct {
-	Format                 string // exif or iptc
+	Format                 goexiv.MetadataFormat
 	Key                    string
 	Value                  string
 	ImageFilename          string
@@ -194,7 +194,7 @@ type MetadataTestCase struct {
 var metadataSetStringTestCases = []MetadataTestCase{
 	// valid exif key, jpeg
 	{
-		Format:                 "exif",
+		Format:                 goexiv.EXIF,
 		Key:                    "Exif.Photo.UserComment",
 		Value:                  "Hello, world! Привет, мир!",
 		ImageFilename:          "testdata/pixel.jpg",
@@ -202,7 +202,7 @@ var metadataSetStringTestCases = []MetadataTestCase{
 	},
 	// valid exif key, webp
 	{
-		Format:                 "exif",
+		Format:                 goexiv.EXIF,
 		Key:                    "Exif.Photo.UserComment",
 		Value:                  "Hello, world! Привет, мир!",
 		ImageFilename:          "testdata/pixel.webp",
@@ -211,7 +211,7 @@ var metadataSetStringTestCases = []MetadataTestCase{
 	// valid iptc key, jpeg.
 	// webp iptc is not supported (see libexiv2/src/webpimage.cpp WebPImage::setIptcData))
 	{
-		Format:                 "iptc",
+		Format:                 goexiv.IPTC,
 		Key:                    "Iptc.Application2.Caption",
 		Value:                  "Hello, world! Привет, мир!",
 		ImageFilename:          "testdata/pixel.jpg",
@@ -219,15 +219,22 @@ var metadataSetStringTestCases = []MetadataTestCase{
 	},
 	// invalid exif key, jpeg
 	{
-		Format:                 "exif",
+		Format:                 goexiv.IPTC,
 		Key:                    "Exif.Invalid.Key",
 		Value:                  "this value should not be written",
 		ImageFilename:          "testdata/pixel.jpg",
 		ExpectedErrorSubstring: "Invalid key",
 	},
+	{
+		Format:                 goexiv.XMP,
+		Key:                    "Xmp.iptc.CreditLine",
+		Value:                  "Hello, world!",
+		ImageFilename:          "testdata/pixel.jpg",
+		ExpectedErrorSubstring: "",
+	},
 	// invalid exif key, webp
 	{
-		Format:                 "exif",
+		Format:                 goexiv.EXIF,
 		Key:                    "Exif.Invalid.Key",
 		Value:                  "this value should not be written",
 		ImageFilename:          "testdata/pixel.webp",
@@ -235,11 +242,19 @@ var metadataSetStringTestCases = []MetadataTestCase{
 	},
 	// invalid iptc key, jpeg
 	{
-		Format:                 "iptc",
+		Format:                 goexiv.IPTC,
 		Key:                    "Iptc.Invalid.Key",
 		Value:                  "this value should not be written",
 		ImageFilename:          "testdata/pixel.jpg",
 		ExpectedErrorSubstring: "Invalid record name",
+	},
+	// invalid exif key, jpeg
+	{
+		Format:                 goexiv.XMP,
+		Key:                    "Xmp.Invalid.Key",
+		Value:                  "this value should not be written",
+		ImageFilename:          "testdata/pixel.jpg",
+		ExpectedErrorSubstring: "No namespace info available for XMP prefix",
 	},
 }
 
@@ -268,10 +283,13 @@ func Test_SetMetadataStringFromFile(t *testing.T) {
 		err = img.ReadMetadata()
 		require.NoErrorf(t, err, "case #%d Cannot read image metadata", i)
 
-		if testcase.Format == "iptc" {
-			data = img.GetIptcData()
-		} else {
+		switch testcase.Format {
+		case goexiv.EXIF:
 			data = img.GetExifData()
+		case goexiv.IPTC:
+			data = img.GetIptcData()
+		case goexiv.XMP:
+			data = img.GetXmpData()
 		}
 
 		receivedValue, err := data.GetString(testcase.Key)
@@ -288,7 +306,7 @@ func Test_SetMetadataStringFromFile(t *testing.T) {
 var metadataSetShortIntTestCases = []MetadataTestCase{
 	// valid exif key, jpeg
 	{
-		Format:                 "exif",
+		Format:                 goexiv.EXIF,
 		Key:                    "Exif.Photo.ExposureProgram",
 		Value:                  "1",
 		ImageFilename:          "testdata/pixel.jpg",
@@ -296,7 +314,7 @@ var metadataSetShortIntTestCases = []MetadataTestCase{
 	},
 	// valid exif key, webp
 	{
-		Format:                 "exif",
+		Format:                 goexiv.EXIF,
 		Key:                    "Exif.Photo.ExposureProgram",
 		Value:                  "2",
 		ImageFilename:          "testdata/pixel.webp",
@@ -305,7 +323,7 @@ var metadataSetShortIntTestCases = []MetadataTestCase{
 	// valid iptc key, jpeg.
 	// webp iptc is not supported (see libexiv2/src/webpimage.cpp WebPImage::setIptcData))
 	{
-		Format:                 "iptc",
+		Format:                 goexiv.IPTC,
 		Key:                    "Iptc.Envelope.ModelVersion",
 		Value:                  "3",
 		ImageFilename:          "testdata/pixel.jpg",
@@ -313,7 +331,7 @@ var metadataSetShortIntTestCases = []MetadataTestCase{
 	},
 	// invalid exif key, jpeg
 	{
-		Format:                 "exif",
+		Format:                 goexiv.EXIF,
 		Key:                    "Exif.Invalid.Key",
 		Value:                  "4",
 		ImageFilename:          "testdata/pixel.jpg",
@@ -321,7 +339,7 @@ var metadataSetShortIntTestCases = []MetadataTestCase{
 	},
 	// invalid exif key, webp
 	{
-		Format:                 "exif",
+		Format:                 goexiv.EXIF,
 		Key:                    "Exif.Invalid.Key",
 		Value:                  "5",
 		ImageFilename:          "testdata/pixel.webp",
@@ -329,7 +347,7 @@ var metadataSetShortIntTestCases = []MetadataTestCase{
 	},
 	// invalid iptc key, jpeg
 	{
-		Format:                 "iptc",
+		Format:                 goexiv.IPTC,
 		Key:                    "Iptc.Invalid.Key",
 		Value:                  "6",
 		ImageFilename:          "testdata/pixel.jpg",
@@ -362,7 +380,7 @@ func Test_SetMetadataShortInt(t *testing.T) {
 		err = img.ReadMetadata()
 		require.NoErrorf(t, err, "case #%d Cannot read image metadata", i)
 
-		if testcase.Format == "iptc" {
+		if testcase.Format == goexiv.IPTC {
 			data = img.GetIptcData()
 		} else {
 			data = img.GetExifData()
@@ -486,23 +504,22 @@ func TestIptcStripKey(t *testing.T) {
 }
 
 func TestXmpStripKey(t *testing.T) {
-	t.Skip("XMP SetXmpString and GetString is not implemented yet")
-	//img, err := goexiv.Open("testdata/pixel.jpg")
-	//require.NoError(t, err)
-	//
-	//err = img.SetXmpString("Xmp.dc.description", "123")
-	//require.NoError(t, err)
-	//
-	//err = img.XmpStripKey("Xmp.dc.description")
-	//require.NoError(t, err)
-	//
-	//err = img.ReadMetadata()
-	//require.NoError(t, err)
-	//
-	//data := img.GetXmpData()
-	//
-	//_, err = data.GetString("Xmp.dc.description")
-	//require.Error(t, err)
+	img, err := goexiv.Open("testdata/pixel.jpg")
+	require.NoError(t, err)
+
+	err = img.SetXmpString("Xmp.dc.description", "123")
+	require.NoError(t, err)
+
+	err = img.XmpStripKey("Xmp.dc.description")
+	require.NoError(t, err)
+
+	err = img.ReadMetadata()
+	require.NoError(t, err)
+
+	data := img.GetXmpData()
+
+	_, err = data.GetString("Xmp.dc.description")
+	require.Error(t, err)
 }
 
 func BenchmarkImage_GetBytes_KeepAlive(b *testing.B) {
