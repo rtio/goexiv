@@ -106,7 +106,7 @@ func (d *ExifDatum) String() string {
 	return C.GoString(cstr)
 }
 
-// Returns all EXIF tags
+// AllTags Returns all EXIF tags
 func (d *ExifData) AllTags() map[string]string {
 	keyValues := map[string]string{}
 	for i := d.Iterator(); i.HasNext(); {
@@ -132,6 +132,7 @@ func (i *ExifDatumIterator) Next() *ExifDatum {
 	return makeExifDatum(i.data, C.exiv2_exif_datum_iterator_next(i.iter))
 }
 
+// makeExifDatumIterator creates a new ExifDatumIterator and sets a finalizer to free the C++ object.
 func makeExifDatumIterator(data *ExifData, cIter *C.Exiv2ExifDatumIterator) *ExifDatumIterator {
 	datum := &ExifDatumIterator{data, cIter}
 

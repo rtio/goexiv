@@ -143,7 +143,7 @@ func (i *Image) ReadMetadata() error {
 	return nil
 }
 
-// Returns an image contents.
+// GetBytes Returns an image contents.
 // If its metadata has been changed, the changes are reflected here.
 func (i *Image) GetBytes() []byte {
 	size := C.exiv_image_get_size(i.img)
@@ -233,6 +233,7 @@ func (i *Image) SetMetadataShort(f MetadataFormat, key, value string) error {
 	return nil
 }
 
+// StripKey removes a key from the metadata
 func (i *Image) StripKey(f MetadataFormat, key string) error {
 	ckey := C.CString(key)
 	defer C.free(unsafe.Pointer(ckey))
@@ -259,6 +260,7 @@ func (i *Image) StripKey(f MetadataFormat, key string) error {
 	return nil
 }
 
+// StripMetadata removes all metadata from the image except the keys in unless
 func (i *Image) StripMetadata(unless []string) error {
 	var err error
 	err = i.ExifStripMetadata(unless)
