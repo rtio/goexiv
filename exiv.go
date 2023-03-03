@@ -143,7 +143,7 @@ func (i *Image) ReadMetadata() error {
 	return nil
 }
 
-// GetBytes Returns an image contents.
+// GetBytes returns an image contents.
 // If its metadata has been changed, the changes are reflected here.
 func (i *Image) GetBytes() []byte {
 	size := C.exiv_image_get_size(i.img)
