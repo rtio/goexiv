@@ -4,7 +4,7 @@ import (
 	"github.com/rtio/goexiv"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"io/ioutil"
+	"os"
 	"runtime"
 	"sync"
 	"testing"
@@ -42,7 +42,7 @@ func TestOpenImage(t *testing.T) {
 }
 
 func Test_OpenBytes(t *testing.T) {
-	bytes, err := ioutil.ReadFile("testdata/pixel.jpg")
+	bytes, err := os.ReadFile("testdata/pixel.jpg")
 	require.NoError(t, err)
 
 	img, err := goexiv.OpenBytes(bytes)
@@ -173,6 +173,16 @@ func TestMetadata(t *testing.T) {
 		"Iptc.Application2.DateCreated": "2012-10-13",
 		"Iptc.Application2.TimeCreated": "12:49:32+01:00",
 	}, iptcData.AllTags())
+
+	//
+	// XMP
+	//
+	xmpData := img.GetXmpData()
+	assert.Equal(t, map[string]string{
+		"Xmp.iptc.CopyrightNotice": "this is the copy, right?",
+		"Xmp.iptc.CreditLine":      "John Doe",
+		"Xmp.iptc.JobId":           "12345",
+	}, xmpData.AllTags())
 }
 
 func TestNoMetadata(t *testing.T) {
@@ -398,7 +408,7 @@ func Test_SetMetadataShortInt(t *testing.T) {
 }
 
 func Test_GetBytes(t *testing.T) {
-	bytes, err := ioutil.ReadFile("testdata/stripped_pixel.jpg")
+	bytes, err := os.ReadFile("testdata/stripped_pixel.jpg")
 	require.NoError(t, err)
 
 	img, err := goexiv.OpenBytes(bytes)
@@ -432,7 +442,7 @@ func Test_GetBytes_Goroutine(t *testing.T) {
 	var wg sync.WaitGroup
 	iterations := 0
 
-	bytes, err := ioutil.ReadFile("testdata/stripped_pixel.jpg")
+	bytes, err := os.ReadFile("testdata/stripped_pixel.jpg")
 	require.NoError(t, err)
 
 	for i := 0; i < 100; i++ {
@@ -681,7 +691,7 @@ func BenchmarkImage_GetBytes_KeepAlive(b *testing.B) {
 }
 
 func BenchmarkImage_GetBytes_NoKeepAlive(b *testing.B) {
-	bytes, err := ioutil.ReadFile("testdata/stripped_pixel.jpg")
+	bytes, err := os.ReadFile("testdata/stripped_pixel.jpg")
 	require.NoError(b, err)
 	var wg sync.WaitGroup
 
@@ -728,4 +738,8 @@ func initializeImage(path string, t *testing.T) {
 		err = img.SetExifString(k, v)
 		require.NoError(t, err, k, v)
 	}
+
+	img.SetXmpString("Xmp.iptc.CreditLine", "John Doe")
+	img.SetXmpString("Xmp.iptc.CopyrightNotice", "this is the copy, right?")
+	img.SetXmpString("Xmp.iptc.JobId", "12345")
 }

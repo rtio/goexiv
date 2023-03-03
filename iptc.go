@@ -110,7 +110,7 @@ func (d *IptcDatum) String() string {
 	return C.GoString(cstr)
 }
 
-// Returns all IPTC tags
+// AllTags returns all IPTC tags
 func (d *IptcData) AllTags() map[string]string {
 	keyValues := map[string]string{}
 	for i := d.Iterator(); i.HasNext(); {
@@ -136,6 +136,7 @@ func (i *IptcDatumIterator) Next() *IptcDatum {
 	return makeIptcDatum(i.data, C.exiv2_iptc_datum_iterator_next(i.iter))
 }
 
+// makeIptcDatumIterator creates a new IptcDatumIterator.
 func makeIptcDatumIterator(data *IptcData, cIter *C.Exiv2IptcDatumIterator) *IptcDatumIterator {
 	datum := &IptcDatumIterator{data, cIter}
 
