@@ -106,7 +106,7 @@ func (d *ExifDatum) String() string {
 	return C.GoString(cstr)
 }
 
-// AllTags Returns all EXIF tags
+// AllTags returns all EXIF tags
 func (d *ExifData) AllTags() map[string]string {
 	keyValues := map[string]string{}
 	for i := d.Iterator(); i.HasNext(); {
