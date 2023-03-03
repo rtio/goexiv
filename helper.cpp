@@ -522,6 +522,72 @@ exiv2_xmp_strip_key(Exiv2Image *img, char *key, Exiv2Error **error)
     }
 }
 
+void
+exiv2_exif_strip_data(Exiv2Image *img, char **keysToRemove, int len, Exiv2Error **error) {
+    Exiv2::ExifData exifData = img->image->exifData();
+
+    for (int i = 0; i < len; i++) {
+        try {
+            Exiv2::ExifData::iterator pos = exifData.findKey(Exiv2::ExifKey(keysToRemove[i]));
+            if (pos == exifData.end()) {
+                continue;
+            }
+            exifData.erase(pos);
+        } catch (Exiv2::Error &e) {
+            if (error) {
+                *error = new Exiv2Error(e);
+            }
+        }
+    }
+    // Finally, write the remaining Exif data to the image file
+    img->image->setExifData(exifData);
+    img->image->writeMetadata();
+}
+
+void
+exiv2_iptc_strip_data(Exiv2Image *img, char **keysToRemove, int len, Exiv2Error **error) {
+    Exiv2::IptcData iptcData = img->image->iptcData();
+
+    for (int i = 0; i < len; i++) {
+        try {
+            Exiv2::IptcData::iterator pos = iptcData.findKey(Exiv2::IptcKey(keysToRemove[i]));
+            if (pos == iptcData.end()) {
+                continue;
+            }
+            iptcData.erase(pos);
+        } catch (Exiv2::Error &e) {
+            if (error) {
+                *error = new Exiv2Error(e);
+            }
+        }
+    }
+    // Finally, write the remaining Iptc data to the image file
+    img->image->setIptcData(iptcData);
+    img->image->writeMetadata();
+}
+
+void
+exiv2_xmp_strip_data(Exiv2Image *img, char **keysToRemove, int len, Exiv2Error **error) {
+    Exiv2::XmpData xmpData = img->image->xmpData();
+
+    for (int i = 0; i < len; i++) {
+        try {
+            Exiv2::XmpData::iterator pos = xmpData.findKey(Exiv2::XmpKey(keysToRemove[i]));
+            if (pos == xmpData.end()) {
+                continue;
+            }
+            xmpData.erase(pos);
+        } catch (Exiv2::Error &e) {
+            if (error) {
+                *error = new Exiv2Error(e);
+            }
+        }
+    }
+    // Finally, write the remaining Xmp data to the image file
+    img->image->setXmpData(xmpData);
+    img->image->writeMetadata();
+}
+
 DEFINE_FREE_FUNCTION(exiv2_exif_data, Exiv2ExifData*);
 
 const char* exiv2_exif_datum_key(const Exiv2ExifDatum *datum)

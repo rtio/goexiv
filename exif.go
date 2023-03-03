@@ -143,22 +143,34 @@ func makeExifDatumIterator(data *ExifData, cIter *C.Exiv2ExifDatumIterator) *Exi
 	return datum
 }
 
+// ExifStripKey removes the given key from the EXIF data.
 func (i *Image) ExifStripKey(key string) error {
 	return i.StripKey(EXIF, key)
 }
 
+// ExifStripMetadata removes all EXIF metadata except the keys in the unless array.
 func (i *Image) ExifStripMetadata(unless []string) error {
-	exifData := i.GetExifData()
-	for iter := exifData.Iterator(); iter.HasNext(); {
-		key := iter.Next().Key()
-		// Skip unless
-		if contains(key, unless) {
-			continue
-		}
-		err := i.StripKey(EXIF, key)
-		if err != nil {
-			return err
-		}
+	var cErr *C.Exiv2Error
+
+	tagsToRemove := getKeysToRemove(i.GetExifData(), unless)
+	if len(tagsToRemove) == 0 {
+		return nil
 	}
+
+	cTags := getCTags(tagsToRemove)
+	defer func() {
+		for _, cstr := range cTags {
+			C.free(unsafe.Pointer(cstr))
+		}
+	}()
+
+	C.exiv2_exif_strip_data(i.img, &cTags[0], C.int(len(cTags)), &cErr)
+
+	if cErr != nil {
+		err := makeError(cErr)
+		C.exiv2_error_free(cErr)
+		return err
+	}
+
 	return nil
 }

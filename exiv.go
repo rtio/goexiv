@@ -287,3 +287,31 @@ func contains(needle string, haystack []string) bool {
 	}
 	return false
 }
+
+// getCTags converts a map of tags to a C array of C strings
+func getCTags(goTags []string) (input []*C.char) {
+	for _, value := range goTags {
+		input = append(input, C.CString(value))
+	}
+
+	return
+}
+
+// This interface is used to get all the tags from a metadata format.
+// Won't be available in the public API.
+type dataFormat interface {
+	AllTags() map[string]string
+}
+
+// getTagsToRemove returns a list of tags to remove from the metadata
+// For now this method won't be added to the public API. We must see if it's
+// useful or not.
+func getKeysToRemove(m dataFormat, unless []string) (tagsToRemove []string) {
+	for key, _ := range m.AllTags() {
+		if !contains(key, unless) {
+			tagsToRemove = append(tagsToRemove, key)
+		}
+	}
+
+	return
+}

@@ -72,6 +72,10 @@ void exiv2_exif_strip_key(Exiv2Image *img, char *key, Exiv2Error **error);
 void exiv2_iptc_strip_key(Exiv2Image *img, char *key, Exiv2Error **error);
 void exiv2_xmp_strip_key(Exiv2Image *img, char *key, Exiv2Error **error);
 
+void exiv2_exif_strip_data(Exiv2Image *img, char **keysToRemove, int len, Exiv2Error **error);
+void exiv2_iptc_strip_data(Exiv2Image *img, char **keysToRemove, int len, Exiv2Error **error);
+void exiv2_xmp_strip_data(Exiv2Image *img, char **keysToRemove, int len, Exiv2Error **error);
+
 const unsigned char* exiv2_image_icc_profile(Exiv2Image *img);
 long exiv2_image_icc_profile_size(Exiv2Image *img);
 

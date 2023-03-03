@@ -112,19 +112,41 @@ func (d *XmpData) GetString(key string) (string, error) {
 	return datum.String(), nil
 }
 
-func (i *Image) XmpStripMetadata(unless []string) error {
-	xmpData := i.GetXmpData()
-	for iter := xmpData.Iterator(); iter.HasNext(); {
-		key := iter.Next().Key()
-		// Skip unless
-		if contains(key, unless) {
-			continue
-		}
-		err := i.StripKey(XMP, key)
-		if err != nil {
-			return err
-		}
+// AllTags returns all ZMP tags
+func (d *XmpData) AllTags() map[string]string {
+	keyValues := map[string]string{}
+	for i := d.Iterator(); i.HasNext(); {
+		d := i.Next()
+		keyValues[d.Key()] = d.String()
 	}
+
+	return keyValues
+}
+
+// XmpStripMetadata removes all EXIF metadata except the keys in the unless array.
+func (i *Image) XmpStripMetadata(unless []string) error {
+	var cErr *C.Exiv2Error
+
+	tagsToRemove := getKeysToRemove(i.GetXmpData(), unless)
+	if len(tagsToRemove) == 0 {
+		return nil
+	}
+
+	cTags := getCTags(tagsToRemove)
+	defer func() {
+		for _, cstr := range cTags {
+			C.free(unsafe.Pointer(cstr))
+		}
+	}()
+
+	C.exiv2_xmp_strip_data(i.img, &cTags[0], C.int(len(cTags)), &cErr)
+
+	if cErr != nil {
+		err := makeError(cErr)
+		C.exiv2_error_free(cErr)
+		return err
+	}
+
 	return nil
 }
 

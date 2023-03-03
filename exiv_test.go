@@ -149,7 +149,9 @@ func TestMetadata(t *testing.T) {
 	}
 
 	assert.Equal(t, map[string]string{
-		"Exif.Image.ExifTag":                 "130",
+		"Exif.Image.Artist":                  "John Doe",
+		"Exif.Image.Copyright":               "©2023 John Doe, all rights reserved",
+		"Exif.Image.ExifTag":                 "202",
 		"Exif.Image.Make":                    "FakeMake",
 		"Exif.Image.Model":                   "FakeModel",
 		"Exif.Image.ResolutionUnit":          "2",
@@ -611,61 +613,38 @@ func TestXmpStrip(t *testing.T) {
 }
 
 func TestStripMetadata(t *testing.T) {
+	// The test for this function must need plenty of tags to ensure it won't generate an unexpected behavior
+	initializeImage("testdata/pixel.jpg", t)
 	img, err := goexiv.Open("testdata/pixel.jpg")
-	require.NoError(t, err)
-
-	// add two strings to the EXIF data
-	err = img.SetExifString("Exif.Photo.UserComment", "123")
-	require.NoError(t, err)
-
-	err = img.SetExifString("Exif.Photo.DateTimeOriginal", "123")
-	require.NoError(t, err)
-
-	// add two strings to the IPTC data
-	err = img.SetIptcString("Iptc.Application2.Caption", "123")
-	require.NoError(t, err)
-
-	err = img.SetIptcString("Iptc.Application2.Keywords", "123")
-	require.NoError(t, err)
-
-	// add two strings to the XMP data
-	err = img.SetXmpString("Xmp.dc.description", "123")
-	require.NoError(t, err)
-
-	err = img.SetXmpString("Xmp.dc.subject", "123")
-	require.NoError(t, err)
-
-	err = img.StripMetadata([]string{"Exif.Photo.UserComment", "Iptc.Application2.Caption", "Xmp.dc.description"})
 	require.NoError(t, err)
 
 	err = img.ReadMetadata()
 	require.NoError(t, err)
 
+	err = img.StripMetadata([]string{"Exif.Image.Copyright", "Iptc.Application2.Copyright", "Xmp.iptc.CreditLine"})
+	require.NoError(t, err)
+
+	// Exif
 	exifData := img.GetExifData()
+	assert.Equal(t, map[string]string{
+		"Exif.Image.Copyright": "©2023 John Doe, all rights reserved",
+	}, exifData.AllTags())
+
+	// IPTC
 	iptcData := img.GetIptcData()
+	assert.Equal(t, map[string]string{
+		"Iptc.Application2.Copyright": "this is the copy, right?",
+	}, iptcData.AllTags())
+
+	// XMP
 	xmpData := img.GetXmpData()
-
-	_, err = exifData.GetString("Exif.Photo.UserComment")
-	require.NoError(t, err)
-
-	_, err = exifData.GetString("Exif.Photo.DateTimeOriginal")
-	require.Error(t, err)
-
-	_, err = iptcData.GetString("Iptc.Application2.Caption")
-	require.NoError(t, err)
-
-	_, err = iptcData.GetString("Iptc.Application2.Keywords")
-	require.Error(t, err)
-
-	_, err = xmpData.GetString("Xmp.dc.description")
-	require.NoError(t, err)
-
-	_, err = xmpData.GetString("Xmp.dc.subject")
-	require.Error(t, err)
+	assert.Equal(t, map[string]string{
+		"Xmp.iptc.CreditLine": "John Doe",
+	}, xmpData.AllTags())
 }
 
 func BenchmarkImage_GetBytes_KeepAlive(b *testing.B) {
-	bytes, err := ioutil.ReadFile("testdata/stripped_pixel.jpg")
+	bytes, err := os.ReadFile("testdata/stripped_pixel.jpg")
 	require.NoError(b, err)
 	var wg sync.WaitGroup
 
@@ -721,6 +700,8 @@ func initializeImage(path string, t *testing.T) {
 	img.SetIptcString("Iptc.Application2.TimeCreated", "124932:0100")
 
 	exifTags := map[string]string{
+		"Exif.Image.Artist":                  "John Doe",
+		"Exif.Image.Copyright":               "©2023 John Doe, all rights reserved",
 		"Exif.Image.Make":                    "FakeMake",
 		"Exif.Image.Model":                   "FakeModel",
 		"Exif.Image.ResolutionUnit":          "2",
