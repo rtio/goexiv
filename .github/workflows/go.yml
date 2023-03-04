@@ -1,0 +1,67 @@
+# This workflow will build a golang project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+name: Go
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+env:
+  EXIV2_VERSION=0.27.6
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go: [ '1.17', '1.18', '1.19' ]
+    steps:
+
+      - name: Install dependencies
+        run: | 
+          cp /etc/apt/sources.list /etc/apt/sources.list~
+          sed -Ei 's/^# deb-src /deb-src /' /etc/apt/sources.list
+          apt update -y
+          apt upgrade -y
+          apt install -y curl subversion make cmake autoconf pkg-config g++ exifprobe libcurl4-openssl-dev libssh-dev
+          apt build-dep -y exiv2
+
+      - name: Cache exiv2
+        id: cache-exiv2
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-exiv2-v${EXIV2_VERSION}
+        with:
+          path: ~/gnu/exiv2
+          key: ${{ runner.os }}-exiv2-build-${{ env.cache-name }}
+          restore-keys: |
+            ${{ runner.os }}-exiv2-build-
+
+      - name: Install exiv2
+        if: ${{ steps.cache-exiv2.outputs.cache-hit != 'true' }}
+        run: |
+          mkdir -p ~/gnu/exiv2
+          cd ~/gnu/exiv2
+          curl -L -O https://github.com/Exiv2/exiv2/releases/download/v${EXIV2_VERSION}/exiv2-${EXIV2_VERSION}-Source.tar.gz
+          tar xzf exiv2-${EXIV2_VERSION}-Source.tar.gz
+          cd exiv2-${EXIV2_VERSION}-Source
+          mkdir build
+          cd build
+          cmake ..
+          make
+          make install
+          ldconfig
+
+      - name: Checkout the code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+          cache: true
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Test
+        run: go test -v ./...
