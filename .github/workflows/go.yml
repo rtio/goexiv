@@ -1,0 +1,70 @@
+# This workflow will build a golang project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+name: Build & Test
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+env:
+  EXIV2_VERSION: 0.27.6
+jobs:
+  build_test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go: [ '1.17', '1.18', '1.19' ]
+    steps:
+
+      - name: Install exiv2 dependencies
+        run: | 
+          sudo cp /etc/apt/sources.list /etc/apt/sources.list~
+          sudo sed -Ei 's/^# deb-src /deb-src /' /etc/apt/sources.list
+          sudo apt update -y
+          sudo apt install -y curl subversion make cmake autoconf pkg-config g++ exifprobe libcurl4-openssl-dev libssh-dev
+          sudo apt build-dep -y exiv2
+
+      - name: Define exiv2 cache
+        id: cache-exiv2
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-exiv2-v${{ env.EXIV2_VERSION }}
+        with:
+          path: ~/gnu/exiv2
+          key: ${{ runner.os }}-exiv2-build-${{ env.cache-name }}
+          restore-keys: |
+            ${{ runner.os }}-exiv2-build-
+
+      - name: Build exiv2 or get it from cache
+        if: ${{ steps.cache-exiv2.outputs.cache-hit != 'true' }}
+        run: |
+          mkdir -p ~/gnu/exiv2
+          cd ~/gnu/exiv2
+          curl -L -O https://github.com/Exiv2/exiv2/releases/download/v${EXIV2_VERSION}/exiv2-${EXIV2_VERSION}-Source.tar.gz
+          tar xzf exiv2-${EXIV2_VERSION}-Source.tar.gz
+          cd exiv2-${EXIV2_VERSION}-Source
+          mkdir build
+          cd build
+          cmake ..
+          make
+          sudo make install
+          sudo ldconfig
+
+      - name: Checkout the code
+        uses: actions/checkout@v3
+
+      - name: Setup Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache: true
+
+      - name: Install project dependencies
+        run: go get .
+
+      - name: Build project
+        run: go build -v ./...
+
+      - name: Test project
+        run: go test -v ./...
