@@ -48,7 +48,7 @@ jobs:
           cmake ..
           make
           sudo make install
-          ldconfig
+          sudo ldconfig
 
       - name: Checkout the code
         uses: actions/checkout@v3
