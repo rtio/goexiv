@@ -18,7 +18,7 @@ jobs:
 
       - name: Install dependencies
         run: | 
-          cp /etc/apt/sources.list /etc/apt/sources.list~
+          sudo cp /etc/apt/sources.list /etc/apt/sources.list~
           sed -Ei 's/^# deb-src /deb-src /' /etc/apt/sources.list
           apt update -y
           apt upgrade -y
