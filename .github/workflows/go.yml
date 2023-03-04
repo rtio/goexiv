@@ -10,7 +10,7 @@ env:
   EXIV2_VERSION: 0.27.6
 jobs:
   build_test:
-    name: Build project
+    name: Build & Test
     runs-on: ubuntu-latest
     strategy:
       matrix:
