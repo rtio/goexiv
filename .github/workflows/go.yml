@@ -36,7 +36,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-exiv2-build-
 
-      - name: Install exiv2 or get from cache
+      - name: Build exiv2 or get it from cache
         if: ${{ steps.cache-exiv2.outputs.cache-hit != 'true' }}
         run: |
           mkdir -p ~/gnu/exiv2
