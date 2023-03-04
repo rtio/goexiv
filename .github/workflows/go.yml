@@ -47,7 +47,7 @@ jobs:
           cd build
           cmake ..
           make
-          make install
+          sudo make install
           ldconfig
 
       - name: Checkout the code
