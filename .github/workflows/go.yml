@@ -48,6 +48,10 @@ jobs:
           cd build
           cmake ..
           make
+
+      - name: Install exiv2
+        run: |
+          cd ~/gnu/exiv2/exiv2-${EXIV2_VERSION}-Source/build
           sudo make install
           sudo ldconfig
 
