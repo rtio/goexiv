@@ -1,6 +1,9 @@
-[![Build Status](https://api.travis-ci.org/rtio/goexiv.svg)](https://api.travis-ci.org/rtio/goexiv.svg)
+# Goexiv
 
-# Go bindings for exiv2 (http://www.exiv2.org)
+![GitHub](https://img.shields.io/github/license/rtio/goexiv)
+![Build & Test Status](https://github.com/rtio/goexiv/actions/workflows/go.yml/badge.svg)
+
+## Go bindings for exiv2 (http://www.exiv2.org)
 
 The library allows reading and writing EXIF and IPTC metadata to/from JPG, WEBP, and PNG images.
 
