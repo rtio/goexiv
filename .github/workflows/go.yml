@@ -72,3 +72,16 @@ jobs:
 
       - name: Test project
         run: go test -v ./...
+
+      - name: Run test/coverage
+        run: |
+          go test -v ./... -covermode=atomic -coverprofile cover.out
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: cover.out
+          flags: unittests
+          fail_ci_if_error: true
+          verbose: true
