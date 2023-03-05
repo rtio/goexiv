@@ -315,6 +315,26 @@ func Test_SetMetadataStringFromFile(t *testing.T) {
 	}
 }
 
+// TesSetMetadataString when metadata format is invalid
+func Test_SetMetadataStringInvalidFormat(t *testing.T) {
+	img, err := goexiv.Open("testdata/pixel.jpg")
+	require.NoError(t, err)
+
+	err = img.SetMetadataString(999, "Exif.Photo.UserComment", "Hello, world!")
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "invalid metadata type")
+}
+
+// TestSetMetadataShort when metadata format is invalid
+func Test_SetMetadataShortInvalidFormat(t *testing.T) {
+	img, err := goexiv.Open("testdata/pixel.jpg")
+	require.NoError(t, err)
+
+	err = img.SetMetadataShort(999, "Exif.Photo.ExposureProgram", "test")
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "invalid metadata type")
+}
+
 var metadataSetShortIntTestCases = []MetadataTestCase{
 	// valid exif key, jpeg
 	{
@@ -409,6 +429,22 @@ func Test_SetMetadataShortInt(t *testing.T) {
 	}
 }
 
+// Test SetIptcShort
+func Test_SetIptcShort(t *testing.T) {
+	img, err := goexiv.Open("testdata/pixel.jpg")
+	require.NoError(t, err)
+
+	err = img.SetIptcShort("Iptc.Envelope.ModelVersion", "1")
+	require.NoError(t, err)
+
+	err = img.ReadMetadata()
+	require.NoError(t, err)
+
+	data := img.GetIptcData()
+	receivedValue, err := data.GetString("Iptc.Envelope.ModelVersion")
+	require.Equal(t, "1", receivedValue)
+}
+
 func Test_GetBytes(t *testing.T) {
 	bytes, err := os.ReadFile("testdata/stripped_pixel.jpg")
 	require.NoError(t, err)
@@ -475,6 +511,15 @@ func Test_GetBytes_Goroutine(t *testing.T) {
 	var memStats runtime.MemStats
 	runtime.ReadMemStats(&memStats)
 	t.Logf("Allocated bytes after test:  %+v\n", memStats.HeapAlloc)
+}
+
+// TestStripKey when metadata format is invalid
+func TestStripKey_InvalidFormat(t *testing.T) {
+	img, err := goexiv.Open("testdata/pixel.jpg")
+	require.NoError(t, err)
+
+	err = img.StripKey(999, "Exif.Photo.UserComment")
+	require.Error(t, err)
 }
 
 func TestExifStripKey(t *testing.T) {
