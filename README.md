@@ -2,6 +2,7 @@
 
 ![GitHub](https://img.shields.io/github/license/rtio/goexiv)
 ![Build & Test Status](https://github.com/rtio/goexiv/actions/workflows/go.yml/badge.svg)
+[![codecov](https://codecov.io/gh/rtio/goexiv/branch/master/graph/badge.svg?token=GG70LUCXAD)](https://codecov.io/gh/rtio/goexiv)
 
 ## Go bindings for exiv2 (http://www.exiv2.org)
 
